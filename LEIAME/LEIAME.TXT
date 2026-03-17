@@ -1,0 +1,31 @@
+Trabalho #1 prog II Professor Luis Oliveira
+
+Aluno: Aaron Moura
+GRR: 20255804
+
+
+
+
+
+
+
+
+
+Informações extras:
+
+Lógica de implementação do programa.
+
+Eu tive a ideia de criar um vetor para cada arquivo lido. Cada vetor terá n espaços. n = número de linhas do arquivo. 
+Dentro de cada espaço do vetor, estará armazenado uma struct. 
+Essa struct contém as Informações que cada linha do arquivo contém (mês, ano, e valor)
+
+Usarei manipulação de ponteiros para calcular as taxas, cotações e janelas de cada arquivo
+
+locale no terminal
+usar a biblioteca locale.h
+setlocale(LC_NUMERIC, "pt_BR_UTF-8");
+
+
+Todos os arquivos tem o mesmo número de linhas
+
+Ipca+ 7 é o maior
