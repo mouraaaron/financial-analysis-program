@@ -26,6 +26,7 @@ Linha* preencher_vetor(const char *nome_arquivo, int *n_linhas)
     FILE *arquivo = fopen(nome_arquivo, "r");
     if(!arquivo)
     {
+        printf("ERRO: Nao foi possivel abrir o arquivo %s\n", nome_arquivo);
         *n_linhas = -1;
         return NULL;
     }
@@ -43,7 +44,7 @@ Linha* preencher_vetor(const char *nome_arquivo, int *n_linhas)
         return NULL; 
     }
 
-    char armazem_temporario[25];
+    char armazem_temporario[100];
 
     while(fgets(armazem_temporario, sizeof(armazem_temporario), arquivo))
     {
@@ -51,38 +52,46 @@ Linha* preencher_vetor(const char *nome_arquivo, int *n_linhas)
         {
             teto *= 2;
             Linha *temp = realloc(vetor, teto * sizeof(*vetor));
+            if(!temp)
+            {
+                free(vetor);
+                fclose(arquivo);
+                return NULL;
+            }
             vetor = temp; 
         }
             
-        char mes_linha_arquivo[5];
-        char valor_linha_arquivo[10];
+        char mes_linha_arquivo[10];
+        char valor_linha_arquivo[20];
         int ano;
 
         //O sscanf retorna quantos itens ele conseguiu ler
-        if(sscanf(armazem_temporario, "%[^.]./%d %s", mes_linha_arquivo, &ano ,valor_linha_arquivo) == 3)
+        if(sscanf(armazem_temporario, "%[^/]/%d %s", mes_linha_arquivo, &ano ,valor_linha_arquivo) == 3)
         {
-            strcpy(vetor[contagem_linhas].mes, mes_linha_arquivo);
+            strncpy(vetor[contagem_linhas].mes, mes_linha_arquivo, 9);
             vetor[contagem_linhas].ano = ano;
             troca_virgula(valor_linha_arquivo);
             vetor[contagem_linhas].valor = atof(valor_linha_arquivo);
-
+            
             contagem_linhas++;
         }
     }
 
+    fclose(arquivo);
+
     *n_linhas = contagem_linhas;
 
-    if (contagem_linhas > 0) {
-        Linha *temp = realloc(vetor, contagem_linhas * sizeof *vetor);
-        if (temp)
-            vetor = temp;
-    } else {
+    if (contagem_linhas == 0) 
+    {
+        printf("AVISO: O arquivo %s foi aberto, mas nao extraiu dados (verifique o formato).\n", nome_arquivo);
         free(vetor);
-        vetor = NULL;
-    }
-
-    return vetor;
+        *n_linhas = 0;
+        return NULL;
+    } 
     
+    Linha *temp = realloc(vetor, contagem_linhas * sizeof(Linha));
+
+    return temp ? temp : vetor;
 }
 
 bool eh_cot(const char *nome_arquivo)
