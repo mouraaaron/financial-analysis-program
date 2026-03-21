@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     int quantidade = argc;
     int quantidade_arquivos = 0;
     int contador_inverso = 1; //começa após o ./juros
-    double capital_inicial = 1000.00;
+    float capital_inicial = 1000.00;
     int janela = 0;
 
     for(int i = 1; i < argc; )// o controle da variável i ocorre dentro do for 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     int indice_primeiro_arquivo = contador_inverso;
-    int quantidade_arquivos = argc - contador_inverso;
+    quantidade_arquivos = argc - contador_inverso;
 
     if(janela > 0 && quantidade_arquivos < 2)
     {
@@ -82,11 +82,13 @@ int main(int argc, char *argv[])
 
         char *nome_arquivo = argv[indice_primeiro_arquivo + j];
         vetores[j] = preencher_vetor(nome_arquivo, &n_linhas[j]);
-
+        
     }   
+    
+
     // Até aqui tenho -> um vetor de ponteiros para vetores preenchidos de cada arquivo (usar para realizar calculos)
     // vou implementar primeiro a lógica sem janelas (calcular o valor final de cada investimento)
-
+    
     if(janela == 0)
     {
         imprime_pontilhado();
@@ -115,20 +117,29 @@ int main(int argc, char *argv[])
     }
     else if(janela > 0)
     {
+       
         imprime_pontilhado();
         imprime_periodo(ano_ini, ano_fim);
         imprime_tam_janela(janela);
 
-        int *resposta = calcula_janelas(vetores[0], argv[indice_primeiro_arquivo], vetores[1], 
-            argv[indice_primeiro_arquivo + 1], n_linhas, ano_ini, ano_fim, capital_inicial, janela);
+        char **nomes_arquivos = malloc(quantidade_arquivos * sizeof(char*));
 
-        imprime_nome_arquivo_janela(argv[indice_primeiro_arquivo]);
-        printf(" %d janelas", resposta[0]);
+        for(int w = 0; w < quantidade_arquivos; w++)
+        {
+            nomes_arquivos[w] = argv[indice_primeiro_arquivo + w];
+        }
 
-        imprime_nome_arquivo_janela(argv[indice_primeiro_arquivo + 1]);
-        printf(" %d janelas", resposta[1]);
+        int *resposta = calcula_janelas(vetores, nomes_arquivos,n_linhas, ano_ini, ano_fim, capital_inicial, janela, indice_primeiro_arquivo, quantidade_arquivos);
+
+        for(int i = 0; i < quantidade_arquivos; i++)
+        {
+            imprime_nome_arquivo_janela(nomes_arquivos[i]);
+            printf(" %d janelas\n", resposta[i]);
+
+        }
 
         free(resposta);
+        free(nomes_arquivos);
         imprime_pontilhado();
     }
     
