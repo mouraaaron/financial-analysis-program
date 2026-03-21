@@ -12,7 +12,7 @@ matriz, vamos implementar a matriz como um vetor de structs de n linhas e 3 colu
 
 typedef struct
 {
-    char mes[5];
+    char mes[10];
     int ano;
     float valor;
 
