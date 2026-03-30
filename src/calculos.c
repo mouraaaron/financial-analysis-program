@@ -49,40 +49,30 @@ float caulcula_taxa(Linha *vetor, int n_linhas, int ano_ini, int ano_fim, float 
     Linha *inicio = NULL;
     Linha *fim = NULL;
 
-    ano_ini = ano_ini %100;  // a struct linha guarda o ano apenas como 00 (2000) ou 25 (2025) 
+    ano_ini = ano_ini % 100;
     ano_fim = ano_fim % 100;
 
-    for(int i = 0; i < n_linhas; i++)
+    for (int i = 0; i < n_linhas; i++)
     {
-        if(vetor[i].ano == ano_ini && strstr(vetor[i].mes, "jan"))
-        {
+        if (vetor[i].ano == ano_ini && strstr(vetor[i].mes, "jan"))
             inicio = &vetor[i];
-            // aqui, pegamos a struct que tenha o primeiro ano igual ao ano de fim (o mês será dezembro)
-        }
 
-        if(vetor[i].ano == ano_fim && strstr(vetor[i].mes, "dez"))
-        {
-            fim = &vetor[i]; 
-        }
+        if (vetor[i].ano == ano_fim && strstr(vetor[i].mes, "dez"))
+            fim = &vetor[i];
     }
 
-    if (!inicio || !fim) //tratamento de erro
+    if (!inicio || !fim)
     {
         printf("Erro: nao foi possivel encontrar o periodo solicitado no arquivo\n");
         return capital_inicial;
     }
-    //agora que encontramos o inicio e o fim, vamos utilizar a logica de calculo de taxas
 
     float capital = capital_inicial;
 
-    Linha *ptr = inicio; 
-
-    while(ptr >= fim)
+    for (Linha *ptr = inicio; ptr >= fim; ptr--)
     {
-        float taxa_anual = ptr->valor;
-        float taxa_mensal = pow(1 + taxa_anual / 100.0, 1.0/12.0) - 1;
-        capital *= (1 + taxa_mensal);
-        ptr--; 
+        float taxa_mensal = pow(1.0 + ptr->valor, 1.0 / 12.0) - 1.0;
+        capital *= (1.0f + taxa_mensal);
     }
 
     return capital;
@@ -98,94 +88,87 @@ float calcula_cotacao_janela(Linha *vetor, int idx_inicio, int idx_fim, float ca
 float calcula_taxa_janela(Linha *vetor, int idx_inicio, int idx_fim, float capital) {
     // O loop corre apenas entre as duas posições da janela
     for (int i = idx_inicio; i >= idx_fim; i--) {
-        capital *= (1.0 + (vetor[i].valor / 100.0));
+        float taxa_mensal = pow(1.0 + vetor[i].valor, 1.0 / 12.0) - 1.0;
+        capital *= (1.0f + taxa_mensal);
     }
     return capital;
 }
 
-int* calcula_janelas(Linha **vetor, char **nomes_arquivos, int *n_linhas, int ano_ini, int ano_fim, float capital_inicial, int tam_janela,
-     int indice_primeiro_arquivo, int qtd_arquivos)
+int *calcula_janelas(Linha **vetor, char **nomes_arquivos, int *n_linhas, int ano_ini, 
+    int ano_fim, float capital_inicial, int tam_janela, int indice_primeiro_arquivo, int qtd_arquivos)
 {
     int *resultado = malloc(qtd_arquivos * sizeof(int));
-    if(!resultado)
+    if (!resultado)
         return NULL;
-
-    for(int i = 0; i < qtd_arquivos; i++)
-    {
-        resultado[i] = 0; 
-    }
+ 
+    for (int i = 0; i < qtd_arquivos; i++)
+        resultado[i] = 0;
+ 
     
-    Linha *inicio = NULL;
-    Linha *fim = NULL;
-
-    int ano_inicial = ano_ini - 2000; 
-    int ano_final = ano_fim - 2000; 
-    // Aqui, tive que criar 2 outras novas variáveis para o ano, por que calcula_cotação e calcula_taxa já fazem 
-    // -2000 nos anos. Se fizer -2000 duas vezes aí as funções não conseguem calcular o resultado.
-
-    Linha *vetor_ref = vetor[0];
-
-    //vamos usar a mesma lógica para encontrar os ponteiros de início e de fim para após isso, calcular as janelas.
-    printf("DEBUG BUSCA: Procurando Jan/%d e Dez/%d\n", ano_ini % 100, ano_fim % 100);
-    for(int i = 0; i < n_linhas[0]; i++) 
+    int ano_ini_2d = ano_ini % 100;
+    int ano_fim_2d = ano_fim % 100;
+ 
+    int idx_inicio = -1; /* indice do jan/ano_ini no vetor de referencia */
+    int idx_fim    = -1; /* indice do dez/ano_fim no vetor de referencia */
+ 
+    for (int i = 0; i < n_linhas[0]; i++)
     {
-
-        if(i == 0) printf("EXEMPLO NO VETOR: Mes=[%s] Ano=[%d]\n", vetor[0][i].mes, vetor[0][i].ano);
-
-        int ano_v = vetor[0][i].ano;
-        char *mes_v = vetor[0][i].mes;
-        
-        if(vetor[0][i].ano == ano_ini && strstr(vetor[0][i].mes, "jan")) 
-        {
-            inicio = &vetor[0][i];
-            printf("DEBUG: Achei Inicio em indice %d\n", i);
-        }
-
-        if(vetor[0][i].ano == ano_fim && strstr(vetor[0][i].mes, "dez"))
-        {
-            fim = &vetor[0][i];
-            printf("DEBUG: Achei Fim em indice %d\n", i);
-        } 
+        if (vetor[0][i].ano == ano_ini_2d && strstr(vetor[0][i].mes, "jan"))
+            idx_inicio = i;
+ 
+        if (vetor[0][i].ano == ano_fim_2d && strstr(vetor[0][i].mes, "dez"))
+            idx_fim = i;
     }
-
-    if (!inicio || !fim) //tratamento de erro
+ 
+    if (idx_inicio == -1 || idx_fim == -1)
     {
-        printf("ERRO: Inicio=%p, Fim=%p (Se NULL, nao encontrou)\n", (void*)inicio, (void*)fim);
+        printf("ERRO: periodo nao encontrado no vetor de referencia\n");
         return resultado;
     }
-
-    int distancia = (int)(inicio - fim) + 1;
-
-    for (int deslize = 0; deslize <= distancia - tam_janela; deslize++)
+ 
+    /*
+     * O vetor vai de dez/25 (indice 0) ate jan/00 (indice alto).
+     * Portanto: idx_inicio (jan/ano_ini) > idx_fim (dez/ano_fim).
+     *
+     * A janela desliza do periodo mais antigo em direcao ao mais recente:
+     *   janela 0: [idx_inicio .. idx_inicio - (tam_janela-1)]
+     *   janela 1: [idx_inicio-1 .. idx_inicio - tam_janela   ]
+     *   ...
+     *
+     * FIX Bug 2 e Bug 3: usar indices inteiros, nao ponteiros nem .ano,
+     * e deslizar na direcao correta (diminuindo idx_inicio).
+     */
+    int total_meses = idx_inicio - idx_fim + 1;
+    int num_janelas = total_meses - tam_janela + 1;
+ 
+    for (int d = 0; d < num_janelas; d++)
     {
-        Linha *janela_inicio = inicio - deslize;
-        Linha *janela_fim = janela_inicio - (tam_janela - 1);
-
-        float melhor_retorno = -100000.00; 
-        int indice_vencedor = -1;
-
-        for(int u = 0; u < qtd_arquivos; u++)
+        int j_ini = idx_inicio - d;              /* mais antigo da janela */
+        int j_fim = j_ini - (tam_janela - 1);    /* mais recente da janela */
+ 
+        float melhor_retorno = -1e30f;
+        int   indice_vencedor = -1;
+ 
+        for (int u = 0; u < qtd_arquivos; u++)
         {
-            float retorno; 
-
-            if(eh_cot(nomes_arquivos[indice_primeiro_arquivo + u]))
-            {
-                retorno = calcula_cotacao_janela(vetor[u], janela_inicio->ano, janela_fim->ano, capital_inicial);
-            }
+            float retorno;
+ 
+            if (eh_cot(nomes_arquivos[indice_primeiro_arquivo + u]))
+                retorno = calcula_cotacao_janela(vetor[u], j_ini, j_fim, capital_inicial);
             else
+                retorno = calcula_taxa_janela(vetor[u], j_ini, j_fim, capital_inicial);
+ 
+            if (retorno > melhor_retorno)
             {
-                retorno = calcula_taxa_janela(vetor[u], janela_inicio->ano, janela_fim->ano, capital_inicial);
-            }
-
-            if(retorno > melhor_retorno)
-            {
-                melhor_retorno = retorno; 
+                melhor_retorno  = retorno;
                 indice_vencedor = u;
             }
         }
-        if(indice_vencedor != -1) //evitra segfault
+ 
+        if (indice_vencedor != -1)
             resultado[indice_vencedor]++;
     }
+ 
     return resultado;
 }
- 
+

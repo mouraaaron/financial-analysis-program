@@ -14,7 +14,6 @@ int main(int argc, char *argv[])
 {
     int ano_ini = 2000; 
     int ano_fim = 2025;
-    int quantidade = argc;
     int quantidade_arquivos = 0;
     int contador_inverso = 1; //começa após o ./juros
     float capital_inicial = 1000.00;
@@ -40,7 +39,6 @@ int main(int argc, char *argv[])
             i +=2;
             contador_inverso += 2;
         }
-
         else if(strcmp(argv[i], "-w") == 0)
         {
             janela = atoi(argv[i + 1]);
@@ -57,7 +55,7 @@ int main(int argc, char *argv[])
         else
         {
             break;
-            //começaram os arquivos aqui
+            //quer dizer que acabou os comandos "-x" e agora começaram a ser passados os arquivos
         }
 
     }
@@ -129,7 +127,8 @@ int main(int argc, char *argv[])
             nomes_arquivos[w] = argv[indice_primeiro_arquivo + w];
         }
 
-        int *resposta = calcula_janelas(vetores, nomes_arquivos,n_linhas, ano_ini, ano_fim, capital_inicial, janela, indice_primeiro_arquivo, quantidade_arquivos);
+        int *resposta = calcula_janelas(vetores, nomes_arquivos,n_linhas, ano_ini, ano_fim, capital_inicial, 
+            janela, 0, quantidade_arquivos);
 
         for(int i = 0; i < quantidade_arquivos; i++)
         {
