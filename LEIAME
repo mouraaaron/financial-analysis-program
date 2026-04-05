@@ -1,0 +1,102 @@
+Trabalho #01 de Programação II professor Luiz Oliveira
+Autor: Aaron Moura
+GRR: 20255804
+
+
+am25/
+│
+├── bin/
+│   └── juros (executável gerado)
+│
+├── src/
+   ├── Makefile
+   ├── juros.c
+   ├── calculos.c
+   ├── calculos.h
+   ├── prints.c
+   ├── prints.h
+   ├── vetor.c
+   └── vetor.h
+  └──LEIAME.txt
+
+
+
+juros.c:
+Contém a função principal (main) e controle geral do programa.
+
+calculos.c / calculos.h:
+Responsáveis pelos cálculos e pela implementação das janelas.
+
+prints.c / prints.h:
+Responsáveis pelos prints.
+
+vetor.c / vetor.h:
+Responsáveis pelo armazenamento e manipulação dos dados lidos dos arquivos.
+
+Makefile:
+Makefile.
+
+
+========================================
+Como Compilar
+========================================
+
+Dentro do diretório src, execute:
+
+    make tudo
+
+O executável será gerado no diretório:
+
+    ../bin/juros
+
+========================================
+Como Executar
+========================================
+
+Dentro de am25, dê as linhas de comando 
+"./juros -c ..."
+
+========================================
+Funcionamento
+========================================
+
+O programa primeiro interpreta os comandos dados após o ./ e interpreta-os, guardando informações importantes. 
+
+Cada arquivo recebe seu próprio vetor de structs. Dentro dessa struct, existem informações necessárias para realizar os
+cálculos.
+
+Esses vetores de structs individuais de cada arquivo são armazenados em um vetor de ponteiros para esses vetores de structs. 
+-> Esse vetor de ponteiros pode ser interpretado como uma matriz. 
+
+Após isso, o programa interpreta se foi enviado o comando para calcular a sobreposição de janelas ou não e os respectivos cál-
+culos são realizados. 
+
+
+========================================
+Algoritmos e Estruturas
+========================================
+
+Uso de vetores para armazenar os dados históricos
+Leitura de arquivos linha a linha
+Cálculo iterativo de juros compostos
+Comparação de valores para determinar o melhor investimento
+
+========================================
+Dificuldades Encontradas
+========================================
+
+Conversão correta de taxa anual para mensal
+Implementação de janelas sobrepostas !!!!
+Tratamento de entrada de dados
+
+========================================
+Bugs Conhecidos
+========================================
+
+
+========================================
+Observações Finais
+========================================
+
+Na minha máquina, eu consigo rodar o programa independente se os arquivos com a cotações e taxas tem o .txt no final.
+Na maquina de outros colegas, isso não foi possível. Ou todos os arquivos tinham .txt ou nenhum tinha. 
